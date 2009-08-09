@@ -1,0 +1,43 @@
+Allows you to group validations and call them on save.
+
+ValidationGroups
+================
+Lets your group validations
+
+Example
+=======
+class Foo < ActiveRecord::Base
+  validates_acceptance_of :bln, :accept => true, :allow_nil => false, :when => [:test1, :test]
+  validates_length_of :str, :within => 1..21, :when => [:test2, :test]
+  validates_length_of :int, :within => 1..21
+end
+
+>> f = Foo.new
+=> #<Foo id: nil, str: nil, int: nil, bln: nil, created_at: nil, updated_at: nil>
+
+When normal save is called .save all validations run normally.
+
+>> f.save
+=> false
+>> f.errors.full_messages
+=> ["Int is too short (minimum is 1 characters)", "Bln must be accepted", "Str is too short (minimum is 1 characters)"]
+
+When save is called with a group only validations part of that group and validations with no groups run
+
+>> f.save(:test1)
+=> false
+>> f.errors.full_messages
+=> ["Int is too short (minimum is 1 characters)", "Bln must be accepted"]
+
+>> f.save([:test, :test1])
+=> false
+>> f.errors.full_messages
+=> ["Int is too short (minimum is 1 characters)", "Bln must be accepted", "Str is too short (minimum is 1 characters)"]
+
+You can all you do f.valid?(:test1) or pass a array of groups just like with save.
+
+To-Do
+=====
+Refactor
+
+Copyright (c) 2009 Kevin Patel, released under the MIT license
